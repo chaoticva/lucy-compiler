@@ -31,3 +31,5 @@ bin/
 .gitignore
 src/test
 src/main/resources
+.idea
+.idea/*

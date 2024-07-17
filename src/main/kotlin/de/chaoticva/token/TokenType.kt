@@ -1,0 +1,36 @@
+package de.chaoticva.token
+
+enum class TokenType(val seq: String) {
+    PLUS("+"),
+    MINUS("-"),
+    ASTERISK("*"),
+    F_SLASH("/"),
+    COMMA(","),
+    SEMICOLON(";"),
+    PERIOD("."),
+    COLON(":"),
+    OPEN_ANGLE("<"),
+    OPEN_PAREN("("),
+    OPEN_BRACKET("["),
+    OPEN_BRACE("{"),
+    CLOSE_ANGLE(">"),
+    CLOSE_PAREN(")"),
+    CLOSE_BRACKET("]"),
+    CLOSE_BRACE("}"),
+    AMPERSAND("&"),
+    PIPE("|"),
+    BANG("!"),
+    QUESTION_MARK("?"),
+    EQUALS("="),
+
+    VAR("var"),
+    DEF("def"),
+    IF("if"),
+    ELSE("else"),
+
+    NUMBER("NUMBER"),
+    BOOLEAN("BOOLEAN"),
+    STRING("STRING"),
+    IDENTIFIER("IDENTIFIER"),
+    EOF("EOF"),
+}
