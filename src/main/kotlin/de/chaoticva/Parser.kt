@@ -186,27 +186,27 @@ class Parser(val lexer: Lexer) {
 
         val parameters = arrayListOf<ParameterNode>()
         if (current.type != TokenType.CLOSE_PAREN) {
-            var name = current.value
+            var paramName = current.value
             tryConsume(TokenType.IDENTIFIER)
             if (current.type == TokenType.COLON) {
                 consume()
                 val type = current.value
                 tryConsume(TokenType.IDENTIFIER)
-                parameters.add(ParameterNode(name, type))
+                parameters.add(ParameterNode(paramName, type))
             } else {
-                parameters.add(ParameterNode(name, "any"))
+                parameters.add(ParameterNode(paramName, "any"))
             }
             while (current.type == TokenType.COMMA) {
                 consume()
-                name = current.value
+                paramName = current.value
                 tryConsume(TokenType.IDENTIFIER)
                 if (current.type == TokenType.COLON) {
                     consume()
                     val type = current.value
                     tryConsume(TokenType.IDENTIFIER)
-                    parameters.add(ParameterNode(name, type))
+                    parameters.add(ParameterNode(paramName, type))
                 } else {
-                    parameters.add(ParameterNode(name, "any"))
+                    parameters.add(ParameterNode(paramName, "any"))
                 }
             }
         }
