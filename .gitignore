@@ -31,5 +31,6 @@ bin/
 .gitignore
 src/test
 src/main/resources
-.idea
+.idea/
 .idea/*
+lucy-compiler.iml
