@@ -4,7 +4,6 @@ import de.chaoticva.ast.*
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
-import kotlin.system.exitProcess
 
 class Compiler(private val parser: Parser, private val output: String, private val mode: String) {
     private val file = parser.parse()
@@ -17,7 +16,7 @@ class Compiler(private val parser: Parser, private val output: String, private v
 
     fun compile() {
         builder.appendLine("section .text")
-        builder.appendLine("global _start")
+        builder.appendLine("    global _start")
         builder.appendLine("_start:")
 
         file.statements.forEach { compile(it) }
@@ -53,12 +52,16 @@ class Compiler(private val parser: Parser, private val output: String, private v
 
     private fun compileVarNode(node: VarNode) {
         if (variables.find { it.name == node.name } != null) {
-            System.err.println("Variable '${node.name}' already defined")
-            exitProcess(1)
+            ErrorHighlighter.highlight(node, parser.lexer.path, "Variable '${node.name}' already defined in line ${node.line}")
         }
 
         val variable = Variable(node.name, sp, "")
         val type = compile(node.value) as String
+
+        if (type != node.type) {
+            ErrorHighlighter.highlight(node, parser.lexer.path, "Type mismatch for variable '${node.name}' in line ${node.line}")
+        }
+
         variable.type = type
         variables.add(variable)
     }
@@ -86,17 +89,14 @@ class Compiler(private val parser: Parser, private val output: String, private v
 
         val function = functions[node.name]
         if (function == null) {
-            System.err.println("Undefined function '${node.name}'")
-            exitProcess(1)
+            ErrorHighlighter.highlight(node, parser.lexer.path, "Undefined function '${node.name}' at line ${node.line}")
         }
 
-        if (function.parameters.size > node.args.size) {
-            System.err.println("Too few arguments for function '${node.name}'")
-            exitProcess(1)
+        if (function!!.parameters.size > node.args.size) {
+            ErrorHighlighter.highlight(node, parser.lexer.path, "Too few arguments for function '${node.name}' in line ${node.line}")
         }
         if (function.parameters.size < node.args.size) {
-            System.err.println("Too many arguments for function '${node.name}'")
-            exitProcess(1)
+            ErrorHighlighter.highlight(node, parser.lexer.path, "Too many arguments for function '${node.name}' in line ${node.line}")
         }
 
         beginScope()
@@ -105,14 +105,20 @@ class Compiler(private val parser: Parser, private val output: String, private v
             val arg = node.args[i]
             val variable = Variable(param.name, sp, "")
             val type = compile(arg) as String
+            val type2 = param.type ?: "auto"
+
+            if (type2 == "auto") continue
+            if (type != type2) {
+                ErrorHighlighter.highlight(node, parser.lexer.path, "Type mismatch for parameter '${param.name}' in function '${node.name}' in line ${node.line}")
+            }
+
             variable.type = type
             variables.add(variable)
         }
 
         function.parameters.forEach {
             run {
-                variables.add(Variable(it.name, sp, it.type ?: "any"))
-                sp++
+                variables.add(Variable(it.name, sp, it.type ?: "auto"))
             }
         }
 
@@ -125,31 +131,38 @@ class Compiler(private val parser: Parser, private val output: String, private v
     private fun compileIdentifierNode(node: IdentifierNode): String {
         val variable = variables.find { it.name == node.name }
         if (variable == null) {
-            System.err.println("Undefined variable '${node.name}'")
-            exitProcess(1)
+            ErrorHighlighter.highlight(node, parser.lexer.path, "Undefined variable '${node.name}'")
         }
 
-        val pointer = (sp - variable.sp - 1) * 8
+        val pointer = (sp - variable!!.sp - 1) * 8
         if (pointer > 0) {
-            if (variable.type == "number") {
+            if (variable.type == "num") {
                 push("QWORD [rsp + ${pointer}]")
             }
-            if (variable.type == "string") {
+            if (variable.type == "str") {
                 push("QWORD [rsp + ${pointer}]")
                 push("QWORD [rsp + ${pointer}]")
             }
-            if (variable.type == "boolean") {
+            if (variable.type == "bool") {
+                push("QWORD [rsp + ${pointer}]")
+            }
+            if (variable.type == "auto") {
+                push("QWORD [rsp + ${pointer}]")
                 push("QWORD [rsp + ${pointer}]")
             }
         } else {
-            if (variable.type == "number") {
+            if (variable.type == "num") {
                 push("QWORD [rsp]")
             }
-            if (variable.type == "string") {
+            if (variable.type == "str") {
                 push("QWORD [rsp]")
                 push("QWORD [rsp]")
             }
-            if (variable.type == "boolean") {
+            if (variable.type == "bool") {
+                push("QWORD [rsp]")
+            }
+            if (variable.type == "auto") {
+                push("QWORD [rsp]")
                 push("QWORD [rsp]")
             }
         }
@@ -158,17 +171,21 @@ class Compiler(private val parser: Parser, private val output: String, private v
     }
 
     private fun compileNumberNode(node: NumberNode): String {
-        builder.appendLine("    mov rax, ${node.value}")
-        push("rax")
+        if (node.value < 256) {
+            builder.appendLine("    mov rax, ${node.value}")
+            push("rax")
+        } else {
+            // add logic for larger numbers
+        }
 
-        return "number"
+        return "num"
     }
 
     private fun compileBooleanNode(node: BooleanNode): String {
         builder.appendLine("    mov rax, ${if (node.value) 1 else 0}")
         push("rax")
 
-        return "boolean"
+        return "bool"
     }
 
     private fun compileStringNode(node: StringNode): String {
@@ -185,7 +202,7 @@ class Compiler(private val parser: Parser, private val output: String, private v
         builder.appendLine("    mov rax, string$idx")
         push("rax")
 
-        return "string"
+        return "str"
     }
 
     private fun createLabel(): String {
@@ -195,11 +212,14 @@ class Compiler(private val parser: Parser, private val output: String, private v
     private fun compileReassignmentNode(node: ReassignmentNode): String {
         val variable = variables.find { it.name == node.name }
         if (variable == null) {
-            System.err.println("Undefined variable '${node.name}'")
-            exitProcess(1)
+            ErrorHighlighter.highlight(node, parser.lexer.path, "Undefined variable '${node.name}'")
         }
 
         val type = compile(node.value) as String
+        if (variable!!.type != type) {
+            ErrorHighlighter.highlight(node, parser.lexer.path, "Type mismatch for variable '${node.name}' in line ${node.line}")
+        }
+
         pop("rax")
         val pointer = (sp - variable.sp - 1) * 8
         builder.appendLine("    mov [rsp + ${pointer}], rax")
@@ -320,40 +340,38 @@ class Compiler(private val parser: Parser, private val output: String, private v
     }
 
     private fun compileBinOpNode(node: BinOpNode): String {
+        val rightType = compile(node.right) as String
+        val leftType = compile(node.left) as String
+        if (leftType != rightType) {
+            ErrorHighlighter.highlight(node, parser.lexer.path, "Type mismatch in binary operation '${node.op}'")
+        }
+
         if (node.op == "+") {
-            compile(node.right)
-            compile(node.left)
             pop("rax")
             pop("rbx")
             builder.appendLine("    add rax, rbx")
             push("rax")
         }
         if (node.op == "-") {
-            compile(node.right)
-            compile(node.left)
             pop("rax")
             pop("rbx")
             builder.appendLine("    sub rax, rbx")
             push("rax")
         }
         if (node.op == "*") {
-            compile(node.right)
-            compile(node.left)
             pop("rax")
             pop("rbx")
             builder.appendLine("    mul rbx")
             push("rax")
         }
         if (node.op == "/") {
-            compile(node.right)
-            compile(node.left)
             pop("rax")
             pop("rbx")
             builder.appendLine("    div rbx")
             push("rax")
         }
 
-        return "number"
+        return "str"
     }
 
     private fun compileDefNode(node: DefNode): String {
@@ -362,7 +380,7 @@ class Compiler(private val parser: Parser, private val output: String, private v
     }
 
     private fun compileParameterNode(node: ParameterNode) {
-        val variable = Variable(node.name, sp, node.type ?: "any")
+        val variable = Variable(node.name, sp, node.type ?: "auto")
         variables.add(variable)
     }
 
