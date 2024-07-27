@@ -34,7 +34,7 @@ foo();
 
 ### Error Handling
 
-[![dIBnVlR.md.png](https://iili.io/dIBnVlR.md.png)](https://freeimage.host/i/dIBnVlR)
+[![dIBnVlR.md.png](https://iili.io/dIBnVlR.md.png)](https://freeimage.host/i/dIBnVlR)<br />
 [![dIBB8In.md.png](https://iili.io/dIBB8In.md.png)](https://freeimage.host/i/dIBB8In)
 
 ## Note:
