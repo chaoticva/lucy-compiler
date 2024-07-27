@@ -17,3 +17,4 @@ language features
 - [ ] type comparisons
 - [ ] imports
 - [ ] return
+- [ ] make compiler detect number size for allocation
