@@ -34,8 +34,8 @@ foo();
 
 ### Error Handling
 
-![Code Example](https://freeimage.host/i/dIBB8In)
-![Error Example](https://freeimage.host/i/dIBnVlR)
+[![dIBnVlR.md.png](https://iili.io/dIBnVlR.md.png)](https://freeimage.host/i/dIBnVlR)
+[![dIBB8In.md.png](https://freeimage.host/i/dIBB8In)](https://freeimage.host/i/dIBB8In)
 
 ## Note:
 
