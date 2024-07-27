@@ -9,6 +9,7 @@
 - functions
 - if-else statements
 - syntax highlighting for jetbrains IDEs using [this](https://github.com/chaoticva/lucy-language-support) plugin
+- Error handling
 
 ```lc
 var errorCode = 7 + 3 * (10 / (12 / (3 + 1) - 1)) / (2 + 3) - 5 - 3 + (8); # 10
@@ -30,6 +31,11 @@ def foo() {
 
 foo();
 ```
+
+### Error Handling
+
+![Code Example](https://freeimage.host/i/dIBB8In)
+![Error Example](https://freeimage.host/i/dIBnVlR)
 
 ## Note:
 
