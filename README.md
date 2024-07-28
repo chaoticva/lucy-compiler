@@ -12,21 +12,21 @@
 - Error handling
 
 ```lc
-var errorCode = 7 + 3 * (10 / (12 / (3 + 1) - 1)) / (2 + 3) - 5 - 3 + (8); # 10
-var successCode = 0;
+var num errorCode = 7 + 3 * (10 / (12 / (3 + 1) - 1)) / (2 + 3) - 5 - 3 + (8); # 10
+const var num successCode = 0;
 
 errorCode = 1;
 
 print("Hello, World!");
 
-var error = true;
+const var bool error = true;
 
-def foo() {
-  if (error) {
-    exit(errorCode);
-  } else {
-    exit(successCode);
-  }
+def void foo() {
+    if (error) {
+        exit(errorCode);
+    } else {
+        exit(successCode);
+    }
 }
 
 foo();
