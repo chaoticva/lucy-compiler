@@ -1,0 +1,6 @@
+def void test(str name, num exitCode) {
+    print(name);
+    exit(exitCode);
+}
+
+test("Kiana", 21);

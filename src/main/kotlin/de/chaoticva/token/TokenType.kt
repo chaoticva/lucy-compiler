@@ -24,6 +24,7 @@ enum class TokenType(val seq: String) {
     EQUALS("="),
 
     VAR("var"),
+    CONST("const"),
     DEF("def"),
     IF("if"),
     ELSE("else"),
