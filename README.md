@@ -3,8 +3,8 @@
 ### currently supported:
 
 - variable assignments
-- types: number, string, bool
-- reassignments: number, bool
+- types: num, str, bool, char, auto, void
+- reassignments: num, bool
 - builtin functions such as exit() and print()
 - functions
 - if-else statements
